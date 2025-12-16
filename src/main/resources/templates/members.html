@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Members Admin</title>
+</head>
+<body class="p-4">
+<a href="#" th:href="@{/admin/dashboard}"><h1>Ensembler: The Ensemble Registration System</h1></a>
+<h2 class="text-3xl mb-6">Members</h2>
+
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>First Name</th>
+        <th>GitHub Username</th>
+        <th>Roles</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="member : ${members}">
+        <td th:text="${member.id}">ID</td>
+        <td th:text="${member.firstName}">Participant Name</td>
+        <td th:text="${member.githubUsername}">GitHub Username</td>
+        <td th:text="${member.roles}">Role, Role, Role</td>
+    </tr>
+    </tbody>
+</table>
+
+<h2>Add Member</h2>
+<form th:action="@{/admin/add-member}" action="#" method="post" th:object="${addMemberForm}">
+    <div style="margin-bottom: 0.5rem;">
+        <label th:for="firstName">First Name:</label>
+        <input type="text" th:field="*{firstName}" autofocus autocomplete="false">
+        <span th:if="${#fields.hasErrors('firstName')}"
+              th:errors="*{firstName}"
+              style="color: #CC1122;">Error</span>
+    </div>
+    <div style="margin-bottom: 0.5rem;">
+        <label th:for="githubUsername">GitHub Username:
+            <input type="text" th:field="*{githubUsername}">
+            <span th:if="${#fields.hasErrors('githubUsername')}"
+                  th:errors="*{githubUsername}"
+                  style="color: #CC1122;">Error</span>
+        </label>
+    </div>
+    <div>
+        <button type="submit">Add Member</button>
+    </div>
+</form>
+
+</body>

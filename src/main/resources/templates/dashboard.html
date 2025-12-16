@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
+<head>
+    <title>Admin Dashboard - Ensembler</title>
+    <link th:href="@{/tailwind.css}" href="../static/tailwind.css" rel="stylesheet">
+    <link rel="icon" href="/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" href="/favicon-16x16.png" sizes="16x16">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png"><!-- 180×180 -->
+    <link rel="manifest" href="/site.webmanifest">
+    <script src="https://kit.fontawesome.com/3ae2c56324.js" crossorigin="anonymous"></script>
+    <script>
+        // convert UTC Date Time to browser's time zone, only for <span> elements with .datetimeutc class
+        window.onload = () => {
+            let dateFormatOptions = { weekday: 'short', timeZoneName: 'short', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit'}
+            let dateTimeFormatter = new Intl.DateTimeFormat('default', dateFormatOptions);
+            let timezoneString = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+            document.querySelectorAll("span.datetimeutc").forEach(function (datetimeutc) {
+                const datetime = new Date(datetimeutc.innerText)
+                datetimeutc.innerText = dateTimeFormatter.format(datetime) // datetime.toLocaleString()
+            })
+            document.querySelectorAll("span#timezone").forEach(function (timezoneElement) {
+                timezoneElement.innerText = timezoneString
+            })
+            document.querySelectorAll("input#timezone").forEach(function (timezoneElement) {
+                timezoneElement.setAttribute("value", timezoneString)
+            })
+
+            // put focus to the Name input field, but don't scroll to bring it into view
+            document.getElementById("name").focus({preventScroll:true});
+        };
+    </script>
+</head>
+<body class="p-4">
+
+<div class="md:flex md:items-center md:justify-between pb-5 border-b border-gray-300">
+    <div class="flex-1 min-w-0">
+        <h2 class="flex text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+            <span th:text="${name}" class="pr-4">Name</span>
+            <span th:text="${username}"
+                  class="inline-flex self-center items-start px-3 py-0.5 rounded-md text-sm font-medium bg-green-100 text-green-800">
+                username
+            </span>
+        </h2>
+        <div class="mt-1 flex flex-col sm:flex-row sm:flex-wrap sm:mt-0 sm:space-x-6">
+            <div class="mt-2 flex items-center text-sm text-gray-500"
+                 sec:authorize="hasRole('ADMIN')">
+                <!-- Heroicon name: outline/globe-alt -->
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     style="height: 1.5rem; width: 1.5rem;"
+                     class="h-6 w-6 pr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                </svg>
+                <a th:href="@{/admin/dashboard}" href="#">Admin</a>
+            </div>
+            <div class="mt-2 flex items-center text-sm text-gray-500"
+                 sec:authorize="hasRole('MEMBER')">
+                <!-- Heroicon name: outline/key -->
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     style="height: 1.5rem; width: 1.5rem;"
+                     class="h-6 w-6 pr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                </svg>
+                <a th:href="@{/member/register}" href="#">Member</a>
+            </div>
+        </div>
+    </div>
+    <div class="mt-4 flex md:mt-0 md:ml-4">
+        <form action="#" th:action="@{/logout}" method="post">
+            <button type="submit"
+                    class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Logout
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="min-w-0 mt-10 px-4 sm:px-6 lg:px-8">
+    <h2 class="text-xl font-medium leading-7 text-gray-900 sm:text-2xl sm:truncate">
+        All Ensembles
+    </h2>
+</div>
+
+<div th:unless="${ensembles.isEmpty()}" class="flex flex-col">
+    <div class="overflow-x-auto">
+        <div class="align-middle inline-block min-w-full px-4 sm:px-6 lg:px-8 font-sans">
+            <div class="bg-white shadow-md rounded my-6">
+                <table class="min-w-full divide-y">
+                    <thead>
+                    <tr class="bg-gray-200 text-black uppercase text-med leading-normal">
+                        <th scope="col" class="py-3 px-10 text-left">Ensemble</th>
+                        <th scope="col" class="py-3 px-10 text-center">Date/Time</th>
+                        <th scope="col" class="py-3 px-10 text-center">Participants</th>
+                        <th scope="col" class="py-3 px-10 text-center">Status</th>
+                    </tr>
+                    </thead>
+                    <tbody class="text-gray-800 text-med font-light">
+                    <tr th:each="ensemble: ${ensembles}"
+                        class="border-b border-gray-200 hover:bg-gray-100">
+                        <td class="py-3 px-10 text-left whitespace-nowrap">
+                            <div class="flex items-center">
+                                <a href="#" class="font-medium text-blue-800 hover:text-blue-600"
+                                   th:href="@{/admin/ensemble/__${ensemble.id}__}"
+                                   th:text="${ensemble.name}">Ensemble #14</a>
+                            </div>
+                        </td>
+                        <td class="py-3 px-10 text-center">
+                            <div class="flex items-center justify-center font-medium">
+                                <span class="datetimeutc" th:text="${ensemble.dateTime}">2021-09-17T16:00:00Z</span>
+                            </div>
+                        </td>
+                        <td class="py-3 px-10 text-center">
+                            <div class="flex items-center">
+                                <span class="text-3xl font-bold text-green-600 pl-8"
+                                      th:text="${ensemble.numberAccepted}">4</span>
+                                <span class="text-xl font-bold text-gray-400">/5</span>
+                                <p th:if="${ensemble.numberDeclined > 0}"
+                                        class="ml-2 flex items-baseline text-sm font-semibold text-red-500">
+                                    <i class="text-red-400 fad fa-times-hexagon pr-1"></i>
+                                    <span class="sr-only">
+                                        Declined
+                                    </span>
+                                    <span th:text="${ensemble.numberDeclined}">1</span>
+                                </p>
+                                <!-- <img class="w-6 h-6 rounded-full border-gray-200 border transform hover:scale-125" src="https://avatars.githubusercontent.com/u/47930468"/> -->
+                                <!-- <img class="w-6 h-6 rounded-full border-gray-200 border -m-1 transform hover:scale-125" src="https://avatars.githubusercontent.com/u/30540091"/> -->
+                                <!-- <img class="w-6 h-6 rounded-full border-gray-200 border -m-1 transform hover:scale-150 hover:z-50" src="https://randomuser.me/api/portraits/men/1.jpg"/> -->
+                                <!-- <img class="w-6 h-6 rounded-full border-gray-200 border -m-1 transform hover:scale-150 hover:z-50" src="https://randomuser.me/api/portraits/women/2.jpg"/> -->
+                                <!-- <img class="w-6 h-6 rounded-full border-gray-200 border -m-1 transform hover:scale-150 hover:z-50" src="https://randomuser.me/api/portraits/men/3.jpg"/> -->
+                            </div>
+                        </td>
+                        <td class="py-3 px-10 text-center" th:switch="${ensemble.state}">
+                            <span th:case="'completed'"
+                                  class="bg-blue-100 text-blue-800 py-1 px-3 rounded-lg text-xs font-bold">
+                                Completed <i class="fal fa-badge-check text-blue-600"></i></span>
+                            <span th:case="'scheduled'">
+                                <span th:if="${ensemble.numberAccepted} < 5"
+                                        class="bg-green-100 text-green-800 py-1 px-3 rounded-lg text-xs font-bold">Available <i class="fal fa-calendar-plus text-green-600"></i></span>
+                                <span th:if="${ensemble.numberAccepted} >= 5"
+                                      class="bg-red-100 text-red-800 py-1 px-3 rounded-lg text-xs font-bold">Full <i class="fal fa-times-hexagon text-red-600"></i></span>
+                            </span>
+                            <span th:case="'canceled'"
+                                  class="bg-red-100 text-red-800 py-1 px-3 rounded-lg text-xs font-bold">
+                                Canceled <i class="fal fa-calendar-times text-red-600"></i></span>
+                            <form method="post" th:action="@{notify/__${ensemble.id}__}">
+                                <button type="submit"
+                                        class="inline-flex justify-center py-1 px-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                Trigger</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<div th:if="${ensembles.isEmpty()}" class="mt-4 px-4 sm:px-6 lg:px-8 ">
+    <div class="rounded-md bg-yellow-50 p-4">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <!-- Heroicon name: solid/exclamation -->
+                <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-med font-medium text-yellow-800">
+                    No Ensembles Found
+                </h3>
+                <div class="mt-2 text-sm text-yellow-700">
+                    <p>
+                        Use the form below to create a new ensemble.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="max-w-2xl">
+    <form th:action="@{/admin/schedule}" action="#" method="post" th:object="${scheduleEnsembleForm}"
+          class="flex flex-col justify-center py-10 sm:px-6 lg:px-8">
+
+        <div>
+            <h3 class="text-xl sm:text-2xl sm:truncate leading-6 font-medium text-gray-900">
+                Create New Ensemble
+            </h3>
+            <p class="mt-1 max-w-2xl text-sm text-gray-500">
+                Details for the ensemble.
+            </p>
+        </div>
+        <div>
+            <div class="grid grid-cols-4 gap-4 items-start pt-6">
+                <label th:for="name" class="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2 pl-4">
+                    Name
+                </label>
+                <div class="mt-0 col-span-2">
+                    <input type="text" th:field="*{name}" required autocomplete="off"
+                           class="max-w-xs text-sm block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-4 gap-4 items-start pt-6">
+                <label th:for="zoomMeetingLink" class="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2 pl-4">
+                    Zoom link
+                </label>
+                <div class="mt-0 col-span-2">
+                    <input type="url" th:field="*{zoomMeetingLink}" autocomplete="off"
+                           class="max-w-xs text-sm block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-4 gap-4 items-start border-gray-200 pt-5">
+                <label th:for="date" class="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2 pl-4">
+                    Date
+                </label>
+                <div class="mt-0 col-span-2">
+                    <input type="date" th:field="*{date}" required
+                           class="max-w-xs text-sm block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-4 gap-4 items-start border-gray-200 pt-5">
+                <label th:for="time"
+                       class="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2 pl-4">
+                    Start Time
+                </label>
+                <div class="mt-0 col-span-2">
+                    <input type="time" th:field="*{time}" required
+                           class="max-w-xs text-sm block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 border-gray-300 rounded-md">
+                    <input id="timezone" type="text" hidden th:field="*{timezone}">
+                </div>
+                <div class="block text-sm font-medium text-gray-500 sm:pt-2">
+                    (<span id="timezone">tbd</span>)
+                </div>
+            </div>
+
+        </div>
+
+        <div class="pt-10">
+            <div class="flex justify-center">
+                <button type="reset"
+                        class="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Reset
+                </button>
+                <button type="submit"
+                        class="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Create
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+</body>
