@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
+<head>
+    <title>Ensembler Registration</title>
+    <link th:href="@{/tailwind.css}" href="../static/tailwind.css" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/3ae2c56324.js" crossorigin="anonymous"></script>
+    <link rel="icon" href="/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" href="/favicon-16x16.png" sizes="16x16">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png"><!-- 180×180 -->
+    <link rel="manifest" href="/site.webmanifest">
+    <script>
+        // convert UTC Date Time to browser's time zone, only for <span> elements with datetimeutc class
+        window.onload = () => {
+            document.querySelectorAll("span.datetimeutc").forEach(function (datetimeutc) {
+                const datetime = new Date(datetimeutc.innerText)
+                datetimeutc.innerText = datetime.toLocaleString()
+            })
+        };
+    </script>
+</head>
+<body class="p-4">
+<div class="md:flex md:items-center md:justify-between pb-5 border-b border-gray-300">
+    <div class="flex-1 min-w-0">
+        <h2 class="flex text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+            <span th:text="${firstName}" class="pr-4">Name</span>
+            <span th:text="${githubUsername}"
+                  class="inline-flex self-center items-start px-3 py-0.5 rounded-md text-sm font-medium bg-green-100 text-green-800">
+                username
+            </span>
+        </h2>
+        <p class="text-sm font-medium text-gray-500 group-hover:text-gray-700">
+            <a href="#" th:href="@{/member/profile}">Edit profile</a>
+        </p>
+        <div class="mt-1 flex flex-col sm:flex-row sm:flex-wrap sm:mt-0 sm:space-x-6">
+            <div class="mt-2 flex items-center text-sm text-gray-500"
+                 sec:authorize="hasRole('ADMIN')">
+                <!-- Heroicon name: outline/globe-alt -->
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     style="height: 1.5rem; width: 1.5rem;"
+                     class="h-6 w-6 pr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                </svg>
+                <a th:href="@{/admin/dashboard}" href="#">Admin</a>
+            </div>
+            <div class="mt-2 flex items-center text-sm text-gray-500"
+                 sec:authorize="hasRole('MEMBER')">
+                <!-- Heroicon name: outline/key -->
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     style="height: 1.5rem; width: 1.5rem;"
+                     class="h-6 w-6 pr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                </svg>
+                <a th:href="@{/member/register}" href="#">Member</a>
+            </div>
+        </div>
+    </div>
+    <div class="mt-4 flex md:mt-0 md:ml-4">
+        <form action="#" th:action="@{/logout}" method="post">
+            <button type="submit"
+                    class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Logout
+            </button>
+        </form>
+    </div>
+</div>
+
+<div th:if="${inProgressEnsembleViewOptional.isPresent()}" th:object="${inProgressEnsembleViewOptional.get()}"
+        class="min-w-0 mt-10 px-4 sm:px-6 lg:px-8">
+    <h2 class="text-xl font-medium leading-7 text-green-800 sm:text-2xl sm:truncate">
+        In Progress
+    </h2>
+    <div class="grid grid-cols-3 min-w-0 mt-4 p-4 border shadow-sm bg-green-50">
+        <div class="text-xl font-semibold">
+            <p th:text="*{name}">Ensemble Name</p>
+            <p class="mt-4">
+                <a class="font-medium text-blue-700 hover:border-blue-700 border-b-2 border-blue-500"
+                   href="#" th:href="*{url}">
+                    Zoom Link
+                </a>
+            </p>
+            <p class="mt-4">Started At <span th:text="*{startTime}">9:00am</span></p>
+            <p class="mt-4" th:if="*{ensembleTimerCreated}">
+                <a class="font-medium text-blue-700 hover:border-blue-700 border-b-2 border-blue-500"
+                  href="#" th:href="*{timerUrl}">Participant Rotation Timer</a>
+            </p>
+        </div>
+        <div>
+            <h2 class="font-semibold">PARTICIPANTS</h2>
+            <p th:each="name: *{participants}" th:text="${name}">Participant</p>
+        </div>
+        <div>
+            <h2 class="font-semibold">SPECTATORS</h2>
+            <p th:each="name: *{spectators}" th:text="${name}">Spectator</p>
+        </div>
+    </div>
+
+</div>
+
+<div class="min-w-0 mt-10 px-4 sm:px-6 lg:px-8">
+    <h2 class="text-xl font-medium leading-7 text-gray-900 sm:text-2xl sm:truncate">
+        Upcoming Ensembles
+    </h2>
+</div>
+
+<div th:unless="${upcomingEnsembles.isEmpty()}" class="flex flex-col">
+    <div class="overflow-x-auto">
+        <div class="align-middle min-w-4/5 px-4 sm:px-6 lg:px-8 font-sans">
+            <div class="bg-white shadow-md rounded my-6">
+                <table class="min-w-full divide-y">
+                    <thead>
+                    <tr class="bg-gray-200 text-black uppercase text-med leading-normal">
+                        <th class="py-3 px-6 text-left">Description</th>
+                        <th class="py-3 px-6 text-center">Date/Time</th>
+                        <th class="py-3 px-6 text-center">Participants</th>
+                        <th class="py-3 px-6 text-center">Spectators</th>
+                        <th class="py-3 px-6 text-center">Links</th>
+                    </tr>
+                    </thead>
+                    <tbody class="text-gray-800 text-med font-light">
+                    <tr th:each="ensemble: ${upcomingEnsembles}"
+                        class="border-b border-gray-200 even:bg-gray-50 hover:bg-gray-100">
+                        <td class="py-3 px-6 text-left whitespace-nowrap">
+                            <div class="flex items-center">
+                                <span th:text="${ensemble.name}" class="font-medium">Ensemble #14</span>
+                            </div>
+                        </td>
+                        <td class="py-3 px-6 text-center">
+                            <div class="flex flex-row justify-center font-medium">
+                                <span class="datetimeutc" th:text="${ensemble.dateTime}">2021-09-17T16:00:00Z</span>
+                            </div>
+                        </td>
+
+                        <!-- PARTICIPANTS -->
+                        <td class="py-3 px-6 text-center" th:switch="${ensemble.memberEnsembleStatus}">
+                            <div class="flex items-center justify-center">
+                                <!-- Participant Count -->
+                                <span class="text-3xl font-bold text-purple-600"
+                                      th:text="${ensemble.participantCount}">4</span>
+                                <span class="text-xl font-bold text-purple-400 mr-2">/5</span>
+                                <!-- Avatar stack -->
+                                <div th:each="member: ${ensemble.participants}"
+                                     class="group mr-1">
+                                    <img class="w-6 h-6 rounded-full border-gray-200 border transform group-hover:scale-125"
+                                         src="https://avatars.githubusercontent.com/tedyoung"
+                                         th:src="@{https://avatars.githubusercontent.com/{githubusername}(githubusername=${member.githubUsername})}"
+                                    >
+                                    <span class="hidden absolute text-sm text-gray-700 font-bold group-hover:block z-50 -mt-12"
+                                          th:text="${member.firstName}">First Name</span>
+                                </div>
+
+                                <div th:if="${ensemble.participantCount} &lt; 5 and ${ensemble.showActionButtons}"
+                                    th:each="i : ${#numbers.sequence(__${ensemble.participantCount}__, 4)}"
+                                    class="group mr-1">
+                                    <img class="w-6 h-6 rounded-full border-green-300 border-4 group-hover:block"
+                                         src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=">
+                                    <span class="hidden absolute text-sm text-green-600 font-bold group-hover:block z-50 -ml-4 -mt-12">available</span>
+                                </div>
+                            </div>
+
+                            <form action="#" method="post"
+                                  th:action="@{${ensemble.participantAction.actionUrl}}"
+                                  th:object="${register}"
+                                  th:if="${ensemble.showActionButtons}"
+                                  >
+                                <input hidden="hidden" type="number" th:field="*{memberId}">
+                                <input hidden="hidden" type="number" th:value="${ensemble.id}" name="ensembleId">
+
+                                <button type="submit"
+                                        th:disabled="${ensemble.participantAction.disabled}"
+                                        th:utext="${ensemble.participantAction.buttonText}"
+                                        class="whitespace-nowrap rounded bg-blue-600 shadow-md px-4 py-2 text-xs font-semibold uppercase leading-normal text-white hover:bg-blue-500 focus:outline-none focus:ring-1 focus:ring-offset-1 active:bg-blue-400 disabled:cursor-not-allowed"
+                                >participant &#x1f44b; button text</button>
+                            </form>
+                        </td>
+
+                        <!-- SPECTATORS -->
+                        <td class="py-3 px-6 text-center">
+                            <div class="flex items-center justify-center mb-4">
+                                <div th:each="member: ${ensemble.spectators}"
+                                     class="group mr-1">
+                                    <img class="w-6 h-6 rounded-full border-gray-200 border transform group-hover:scale-125"
+                                         src="https://avatars.githubusercontent.com/tedyoung"
+                                         th:src="@{https://avatars.githubusercontent.com/{githubusername}(githubusername=${member.githubUsername})}"
+                                    >
+                                    <span class="hidden absolute text-sm text-gray-700 font-bold group-hover:block z-50 -mt-12"
+                                          th:text="${member.firstName}">First Name</span>
+                                </div>
+
+                                <div th:if="${ensemble.showActionButtons}"
+                                     class="group mr-1">
+                                    <img class="w-6 h-6 rounded-full border-green-300 border-4 group-hover:block"
+                                         src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=">
+                                    <span class="hidden absolute text-sm text-green-600 font-bold group-hover:block z-50 -ml-4 -mt-12">available</span>
+                                </div>
+                            </div>
+                            <form action="#" method="post"
+                                  th:action="@{${ensemble.spectatorAction.actionUrl}}"
+                                  th:object="${register}"
+                                  th:if="${ensemble.showActionButtons}"
+                            >
+                                <input hidden="hidden" type="number" th:field="*{memberId}">
+                                <input hidden="hidden" type="number" th:value="${ensemble.id}" name="ensembleId">
+                                <button type="submit" th:utext="${ensemble.spectatorAction.buttonText}"
+                                        class="whitespace-nowrap rounded bg-blue-600 shadow-md px-4 py-2 text-xs font-semibold uppercase leading-normal text-white hover:bg-blue-500 focus:outline-none focus:ring-1 focus:ring-offset-1 active:bg-blue-400">
+                                    spectator &#x1F440; button text
+                                </button>
+                            </form>
+                        </td>
+
+                        <td class="py-3 px-6 text-center" th:object="${ensemble.status}">
+                            <div th:each="link : *{links}">
+                                <a class="font-medium text-blue-700 hover:border-blue-700 border-b-2 border-blue-500"
+                                   href="#" th:href="${link.url}" th:utext="${link.text}">
+                                    <i class="far fa-video pr-2" aria-hidden="true"></i>Some Link Here
+                                </a>
+                            </div>
+                            <div th:each="text: *{messages}" th:text="${text}"
+                                 class="font-medium">
+                                Text message here
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:if="${upcomingEnsembles.isEmpty()}" class="mt-4 px-4 sm:px-6 lg:px-8">
+    <div class="rounded-md bg-yellow-50 p-4">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <!-- Heroicon name: solid/exclamation -->
+                <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-med font-medium text-yellow-800">
+                    No Ensembles Are Available
+                </h3>
+                <div class="mt-2 text-sm text-yellow-700">
+                    <p>
+                        Come back later.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="min-w-0 mt-10 px-4 sm:px-6 lg:px-8">
+    <h2 class="text-xl font-medium leading-7 text-gray-900 sm:text-2xl sm:truncate">
+        Past Ensembles
+    </h2>
+</div>
+
+<div th:unless="${pastEnsembles.isEmpty()}" class="flex flex-col">
+    <div class="overflow-x-auto">
+        <div class="align-middle min-w-4/5 px-4 sm:px-6 lg:px-8 font-sans">
+            <div class="bg-white shadow-md rounded my-6">
+                <table class="min-w-full divide-y">
+                    <thead>
+                    <tr class="bg-gray-200 text-black uppercase text-med leading-normal">
+                        <th class="py-3 px-6 text-left">Description</th>
+                        <th class="py-3 px-6 text-center">Date/Time</th>
+                        <th class="py-3 px-6 text-center">Participants</th>
+                        <th class="py-3 px-6 text-center">Spectators</th>
+                        <th class="py-3 px-6 text-center">Links</th>
+                    </tr>
+                    </thead>
+                    <tbody class="text-gray-800 text-med font-light">
+                    <tr th:each="ensemble: ${pastEnsembles}"
+                        class="border-b border-gray-200 even:bg-gray-50 hover:bg-gray-100">
+                        <td class="py-3 px-6 text-left whitespace-nowrap">
+                            <div class="flex items-center">
+                                <span th:text="${ensemble.name}" class="font-medium">Ensemble #14</span>
+                            </div>
+                        </td>
+                        <td class="py-3 px-6 text-center">
+                            <div class="flex flex-row justify-center font-medium">
+                                <span class="datetimeutc" th:text="${ensemble.dateTime}">2021-09-17T16:00:00Z</span>
+                            </div>
+                        </td>
+
+                        <!-- PARTICIPANTS -->
+                        <td class="py-3 px-6 text-center" th:switch="${ensemble.memberEnsembleStatus}">
+                            <div class="flex items-center justify-center">
+                                <!-- Participant Count -->
+                                <span class="text-3xl font-bold text-purple-600"
+                                      th:text="${ensemble.participantCount}">4</span>
+                                <span class="text-xl font-bold text-purple-400 mr-2">/5</span>
+                                <!-- Avatar stack -->
+                                <div th:each="member: ${ensemble.participants}"
+                                     class="group mr-1">
+                                    <img class="w-6 h-6 rounded-full border-gray-200 border transform group-hover:scale-125"
+                                         src="https://avatars.githubusercontent.com/tedyoung"
+                                         th:src="@{https://avatars.githubusercontent.com/{githubusername}(githubusername=${member.githubUsername})}"
+                                    >
+                                    <span class="hidden absolute text-sm text-gray-700 font-bold group-hover:block z-50 -mt-12"
+                                          th:text="${member.firstName}">First Name</span>
+                                </div>
+
+                                <div th:if="${ensemble.participantCount} &lt; 5 and ${ensemble.showActionButtons}"
+                                    th:each="i : ${#numbers.sequence(__${ensemble.participantCount}__, 4)}"
+                                    class="group mr-1">
+                                    <img class="w-6 h-6 rounded-full border-green-300 border-4 group-hover:block"
+                                         src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=">
+                                    <span class="hidden absolute text-sm text-green-600 font-bold group-hover:block z-50 -ml-4 -mt-12">available</span>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- SPECTATORS -->
+                        <td class="py-3 px-6 text-center">
+                            <div class="flex items-center justify-center mb-4">
+                                <div th:each="member: ${ensemble.spectators}"
+                                     class="group mr-1">
+                                    <img class="w-6 h-6 rounded-full border-gray-200 border transform group-hover:scale-125"
+                                         src="https://avatars.githubusercontent.com/tedyoung"
+                                         th:src="@{https://avatars.githubusercontent.com/{githubusername}(githubusername=${member.githubUsername})}"
+                                    >
+                                    <span class="hidden absolute text-sm text-gray-700 font-bold group-hover:block z-50 -mt-12"
+                                          th:text="${member.firstName}">First Name</span>
+                                </div>
+
+                                <div th:if="${ensemble.showActionButtons}"
+                                     class="group mr-1">
+                                    <img class="w-6 h-6 rounded-full border-green-300 border-4 group-hover:block"
+                                         src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=">
+                                    <span class="hidden absolute text-sm text-green-600 font-bold group-hover:block z-50 -ml-4 -mt-12">available</span>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td class="py-3 px-6 text-center" th:object="${ensemble.status}">
+                            <div th:each="link : *{links}">
+                                <a class="font-medium text-blue-700 hover:border-blue-700 border-b-2 border-blue-500"
+                                   href="#" th:href="${link.url}" th:utext="${link.text}">
+                                    <i class="far fa-video pr-2" aria-hidden="true"></i>Some Link Here
+                                </a>
+                            </div>
+                            <div th:each="text: *{messages}" th:text="${text}"
+                                 class="font-medium">
+                                Text message here
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:if="${pastEnsembles.isEmpty()}" class="mt-4 px-4 sm:px-6 lg:px-8">
+    <div class="rounded-md bg-yellow-50 p-4">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <!-- Heroicon name: solid/exclamation -->
+                <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-med font-medium text-yellow-800">
+                    No Ensembles
+                </h3>
+                <div class="mt-2 text-sm text-yellow-700">
+                    <p>
+                        You haven't participated in any ensembles yet.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
