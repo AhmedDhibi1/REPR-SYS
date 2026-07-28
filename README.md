@@ -245,7 +245,7 @@ ensembler/
 
 ```bash
 git clone https://github.com/AhmedDhibi1/REPR-SYS.git
-cd ensembler
+cd REPR-SYS
 ```
 
 ### 2. Set Up Local Environment
